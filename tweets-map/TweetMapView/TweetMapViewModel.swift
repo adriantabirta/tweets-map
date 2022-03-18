@@ -52,7 +52,7 @@ extension TweetMapViewModel {
             .filter{ $0 == nil }  // add first rule when no other rule exist
             .withLatestFrom(input.query.orEmpty)
             .flatMapLatest{ [unowned self] query -> Observable<Result<TwitterResponse<[Rule]>, Error>> in
-                return provider.request(endpoint: .addRule(query: query))
+                return self.provider.request(endpoint: .addRule(query: query))
             }
             .map({ result -> Void in
                 switch result {
@@ -66,7 +66,7 @@ extension TweetMapViewModel {
         
         filters
             .filter{ $0 != nil } // have already rules, delete them and add new
-            .compactMap{ $0 }
+            .compactMap{ $0 as! [Rule] }
             .compactMap { $0.map { (rule) -> String in return rule.id } }
             .flatMapLatest{ [unowned self] ids -> Observable<Result<TwitterResponse<EmptyBody>, Error>> in
                 return provider.request(endpoint: .removeAllRules(ids: ids))

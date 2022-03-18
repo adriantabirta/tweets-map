@@ -19,6 +19,11 @@ class NetworkServiceProvider<N: NetworkService>: NSObject, URLSessionDataDelegat
     
     private lazy var onStreamNewData = PublishSubject<Data>()
     
+    private lazy var onStreamNewData1 = PublishSubject<(Data, Int)>()
+    
+    var outputStream: OutputStream? = nil
+
+    
     init(urlSession: URLSession = URLSession(configuration: URLSessionConfiguration.default),
          decoder: JSONDecoder = JSONDecoder(), formatter: DateFormatter = DateFormatter()) {
         super.init()
@@ -30,14 +35,42 @@ class NetworkServiceProvider<N: NetworkService>: NSObject, URLSessionDataDelegat
         self.decoder = decoder
     }
     
-    func urlSession(_ session: URLSession, dataTask: URLSessionDataTask, didReceive response: URLResponse, completionHandler: @escaping (URLSession.ResponseDisposition) -> Void) {
+    private func closeStream() {
+        if let stream = self.outputStream {
+            stream.close()
+            self.outputStream = nil
+        }
+    }
+    
+    
+    
+    func urlSession(_ session: URLSession, dataTask: URLSessionDataTask,
+                    didReceive response: URLResponse,
+                    completionHandler: @escaping (URLSession.ResponseDisposition) -> Void) {
+        print(response.debugDescription)
         completionHandler(dataTask.state != .canceling ? .allow : .cancel)
     }
     
+//    func urlSession(_ session: URLSession, task: URLSessionTask, needNewBodyStream completionHandler: @escaping (InputStream?) -> Void) {
+//        self.closeStream()
+//
+//        var inStream: InputStream? = nil
+//        var outStream: OutputStream? = nil
+//        Stream.getBoundStreams(withBufferSize: 4096, inputStream: &inStream, outputStream: &outStream)
+//        self.outputStream = outStream
+//
+//        completionHandler(inStream)
+//    }
+    
     func urlSession(_ session: URLSession, dataTask: URLSessionDataTask, didReceive data: Data) {
-        if dataTask.state != .canceling {
-            onStreamNewData.onNext(data)
-        }
+        guard dataTask.state != .canceling else { return }
+        onStreamNewData1.onNext((data, 100))
+//        if let httpResponse = dataTask.response as? HTTPURLResponse {
+//            if let length = Int(httpResponse.allHeaderFields["Content-Length"] as! String) {
+//                onStreamNewData1.onNext((data, length))
+//            }
+//        }
+        
     }
     
     func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {        
@@ -106,5 +139,17 @@ extension NetworkServiceProvider {
             })
             .compactMap{ String(describing: "[" + $0.replacingOccurrences(of: "\r\n", with: ",") + "]").data(using: .utf8) }
             .compactMap { try? self.decoder!.decode(D.self, from: $0) }
+    }
+    
+    func requestStreamImage(endpoint: N) -> Observable<(Data, Int)> {
+        currentTask = urlSession!.dataTask(with: endpoint.urlRequest)
+        currentTask?.resume()
+        return onStreamNewData1
+            .asObserver()
+            .filter{ $0.0.count > 0 }
+            .do(onNext: { result in
+                print("received bytes: \(result.0.count)")
+                
+            })
     }
 }

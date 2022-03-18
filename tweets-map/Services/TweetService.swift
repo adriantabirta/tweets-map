@@ -17,8 +17,9 @@ enum TweetService: NetworkService {
 extension TweetService {
     
     var headers: [String : Any] {
-        return [ "Content-Type": "application/json",
-                 "Authorization": "Bearer AAAAAAAAAAAAAAAAAAAAADLURQEAAAAA1I%2BD0wmx4tcAUwC0VgDzl2yrzT4%3DRV7ee30R1IL3wQJ3Sq41YRV1xPd6ax5m64MZsItMly4m86jHKu"]
+        return [:]
+//        return [ "Content-Type": "application/json",
+//                 "Authorization": "Bearer AAAAAAAAAAAAAAAAAAAAADLURQEAAAAA1I%2BD0wmx4tcAUwC0VgDzl2yrzT4%3DRV7ee30R1IL3wQJ3Sq41YRV1xPd6ax5m64MZsItMly4m86jHKu"]
     }
     
     var method: ServiceMethod {
@@ -31,17 +32,20 @@ extension TweetService {
     }
     
     var path: String {
-        switch self {
-        case .findAllRules, .addRule(_), .removeAllRules(_):
-            return "/tweets/search/stream/rules"
-            
-        case .streamTweets:
-            return "/tweets/search/stream?tweet.fields=created_at,geo&expansions=author_id&user.fields=created_at"
-        }
+//        switch self {
+//        case .findAllRules, .addRule(_), .removeAllRules(_):
+//            return "/tweets/search/stream/rules"
+//
+//        case .streamTweets:
+//            return "/tweets/search/stream?tweet.fields=created_at,geo&expansions=author_id&user.fields=created_at"
+//        }
+        return ""
     }
     
     var baseURL: String {
-        return "https://api.twitter.com/2"
+        // return "https://api.twitter.com/2"
+//        return "http://localhost:8080"
+        return "http://192.168.100.28:8080"
     }
     
     var body: Data? {

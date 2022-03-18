@@ -16,8 +16,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         
         self.window = UIWindow(frame: UIScreen.main.bounds)
         let storyboard = UIStoryboard.init(name: "Main", bundle: nil)
-        let navigationController = storyboard.instantiateViewController(withIdentifier: "MainNavBarController") as! UINavigationController
-        self.window?.rootViewController = navigationController
+//        let navigationController = storyboard.instantiateViewController(withIdentifier: "MainNavBarController") as! UINavigationController
+        let vc = storyboard.instantiateViewController(identifier: "DecoderViewController") as! UIViewController
+        self.window?.rootViewController = vc
         self.window?.makeKeyAndVisible()
         
         return true
